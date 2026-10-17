@@ -27,9 +27,8 @@ class _Page:
     def update(self):
         return None
 
-    def run_task(self, coroutine):
-        # Keep the smoke test deterministic; the timer itself is not needed.
-        coroutine.close()
+    def run_task(self, async_function, *args, **kwargs):
+        # Keep the smoke test deterministic; do not start the timer.
         return _Task()
 
 
