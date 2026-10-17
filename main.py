@@ -186,7 +186,7 @@ def main(page: ft.Page):
                 ft.Row([
                     ft.Text("⏱️ زمان هر دور", size=14, color=TEXT), ft.Container(expand=True),
                     ft.Dropdown(width=130, value=str(state["seconds"]),
-                        options=[ft.DropdownOption("30", "۳۰ ثانیه"), ft.DropdownOption("60", "۶۰ ثانیه"), ft.DropdownOption("90", "۹۰ ثانیه")],
+                        options=[ft.DropdownOption(key="30", text="۳۰ ثانیه"), ft.DropdownOption(key="60", text="۶۰ ثانیه"), ft.DropdownOption(key="90", text="۹۰ ثانیه")],
                         on_select=lambda e: state.update(seconds=int(e.control.value)))
                 ], alignment=ft.MainAxisAlignment.CENTER),
                 button("شروع بازی", ft.Icons.PLAY_ARROW_ROUNDED, start_game, PURPLE),
