@@ -1,3 +1,4 @@
+# JNI is pinned in pyproject.toml to keep Android plugin versions compatible.
 name: Build Android APK
 
 on:
