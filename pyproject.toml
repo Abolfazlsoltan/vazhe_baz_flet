@@ -13,3 +13,6 @@ org = "com.abolfazl.vazhebaz"
 product = "واژه‌باز"
 company = "Abolfazl"
 copyright = "Copyright (C) 2026"
+
+[tool.flet.flutter.pubspec.dependency_overrides]
+jni = "1.1.0"
