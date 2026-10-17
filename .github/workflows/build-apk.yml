@@ -1,0 +1,32 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build APK with Flet
+        id: build
+        uses: flet-dev/flet-build-action@v1
+        with:
+          target: apk
+          runner-python-version: "3.12"
+          bundled-python-version: "3.12"
+          build-number: ${{ github.run_number }}
+
+      - name: Upload APK build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: vazhe-baz-android-apk
+          path: ${{ steps.build.outputs.output-path }}/**/*.apk
+          if-no-files-found: error
