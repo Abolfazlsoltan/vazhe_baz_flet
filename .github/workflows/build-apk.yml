@@ -23,10 +23,12 @@ jobs:
           runner-python-version: "3.12"
           bundled-python-version: "3.12"
           build-number: ${{ github.run_number }}
+          cache: false
 
-      - name: Upload APK build artifact
+      - name: Upload APK build archive
         uses: actions/upload-artifact@v7
         with:
           name: vazhe-baz-android-apk
-          path: ${{ steps.build.outputs.output-path }}/**/*.apk
+          path: ${{ steps.build.outputs.archive-path }}
+          archive: false
           if-no-files-found: error

@@ -2,8 +2,11 @@
 name = "vazhe-baz"
 version = "1.0.0"
 description = "Persian offline word guessing game built with Flet"
-requires-python = ">=3.10"
-dependencies = ["flet>=0.27.0,<1.0.0"]
+requires-python = ">=3.10,<3.13"
+dependencies = ["flet==0.86.5"]
+
+[dependency-groups]
+dev = ["flet-cli==0.86.5"]
 
 [tool.flet]
 org = "com.abolfazl.vazhebaz"
