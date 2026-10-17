@@ -36,6 +36,10 @@ class _Page:
 def _walk(control):
     if control is None or isinstance(control, (str, int, float, bool)):
         return
+    if isinstance(control, (list, tuple)):
+        for child in control:
+            yield from _walk(child)
+        return
     yield control
     content = getattr(control, "content", None)
     if content is not None and not isinstance(content, (str, int, float, bool)):
