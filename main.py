@@ -53,7 +53,7 @@ def main(page: ft.Page):
             text, icon=icon, on_click=handler, expand=expand,
             style=ft.ButtonStyle(
                 bgcolor=color, color="#FFFFFF",
-                padding=ft.padding.symmetric(horizontal=18, vertical=16),
+                padding=ft.Padding.symmetric(horizontal=18, vertical=16),
                 shape=ft.RoundedRectangleBorder(radius=15)
             )
         )
@@ -150,7 +150,7 @@ def main(page: ft.Page):
         topic_chips = ft.Row(
             [ft.Container(
                 content=ft.Text(t, size=13, weight=ft.FontWeight.W_600),
-                padding=ft.padding.symmetric(horizontal=13, vertical=10), border_radius=30,
+                padding=ft.Padding.symmetric(horizontal=13, vertical=10), border_radius=30,
                 bgcolor=PURPLE if state["topic"] == t else "#202A43",
                 border=ft.border.all(1, "#3A4562"),
                 on_click=lambda e, x=t: choose_topic(x)
@@ -299,7 +299,7 @@ def main(page: ft.Page):
                 ]),
                 content
             ], spacing=14),
-            padding=ft.padding.only(left=16, right=16, top=12, bottom=24),
+            padding=ft.Padding.only(left=16, right=16, top=12, bottom=24),
             width=560
         ))
         page.update()
