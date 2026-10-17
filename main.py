@@ -41,7 +41,7 @@ def main(page: ft.Page):
     def card(content, padding=18):
         return ft.Container(
             content=content, padding=padding, bgcolor=PANEL,
-            border=ft.border.all(1, "#29334D"), border_radius=22,
+            border=ft.Border.all(1, "#29334D"), border_radius=22,
             shadow=ft.BoxShadow(blur_radius=22, color="#080B16", offset=ft.Offset(0, 8))
         )
 
@@ -49,8 +49,8 @@ def main(page: ft.Page):
         return ft.Text(text, size=size, color=color, weight=weight, text_align=ft.TextAlign.RIGHT)
 
     def button(text, icon, handler, color=PURPLE, expand=True):
-        return ft.ElevatedButton(
-            text, icon=icon, on_click=handler, expand=expand,
+        return ft.Button(
+            content=text, icon=icon, on_click=handler, expand=expand,
             style=ft.ButtonStyle(
                 bgcolor=color, color="#FFFFFF",
                 padding=ft.Padding.symmetric(horizontal=18, vertical=16),
@@ -152,7 +152,7 @@ def main(page: ft.Page):
                 content=ft.Text(t, size=13, weight=ft.FontWeight.W_600),
                 padding=ft.Padding.symmetric(horizontal=13, vertical=10), border_radius=30,
                 bgcolor=PURPLE if state["topic"] == t else "#202A43",
-                border=ft.border.all(1, "#3A4562"),
+                border=ft.Border.all(1, "#3A4562"),
                 on_click=lambda e, x=t: choose_topic(x)
             ) for t in WORDS],
             wrap=True, spacing=8, run_spacing=8, alignment=ft.MainAxisAlignment.END
@@ -186,8 +186,8 @@ def main(page: ft.Page):
                 ft.Row([
                     ft.Text("⏱️ زمان هر دور", size=14, color=TEXT), ft.Container(expand=True),
                     ft.Dropdown(width=130, value=str(state["seconds"]),
-                        options=[ft.dropdown.Option("30", "۳۰ ثانیه"), ft.dropdown.Option("60", "۶۰ ثانیه"), ft.dropdown.Option("90", "۹۰ ثانیه")],
-                        on_change=lambda e: state.update(seconds=int(e.control.value)))
+                        options=[ft.DropdownOption("30", "۳۰ ثانیه"), ft.DropdownOption("60", "۶۰ ثانیه"), ft.DropdownOption("90", "۹۰ ثانیه")],
+                        on_select=lambda e: state.update(seconds=int(e.control.value)))
                 ], alignment=ft.MainAxisAlignment.CENTER),
                 button("شروع بازی", ft.Icons.PLAY_ARROW_ROUNDED, start_game, PURPLE),
             ], spacing=13)),
@@ -209,21 +209,21 @@ def main(page: ft.Page):
         for ch in word:
             if ch in state["guessed"] or ch.isspace():
                 shown.append(ft.Container(ft.Text(ch, size=25, weight=ft.FontWeight.BOLD, color=GREEN),
-                    width=42, height=52, alignment=ft.alignment.center, bgcolor="#1C3C3A",
-                    border=ft.border.all(1, "#347A68"), border_radius=12))
+                    width=42, height=52, alignment=ft.Alignment.CENTER, bgcolor="#1C3C3A",
+                    border=ft.Border.all(1, "#347A68"), border_radius=12))
             else:
                 shown.append(ft.Container(ft.Text("؟", size=22, color="#8995B0"),
-                    width=42, height=52, alignment=ft.alignment.center, bgcolor="#202A43",
-                    border=ft.border.all(1, "#3A4562"), border_radius=12))
+                    width=42, height=52, alignment=ft.Alignment.CENTER, bgcolor="#202A43",
+                    border=ft.Border.all(1, "#3A4562"), border_radius=12))
         alphabet = []
         for ch in ALPHABET:
             used = ch in state["guessed"] or ch in state["wrong"]
             color = GREEN if ch in state["guessed"] else RED if ch in state["wrong"] else "#202A43"
             alphabet.append(ft.Container(
                 ft.Text(ch, size=17, weight=ft.FontWeight.BOLD, color="#FFFFFF" if used else TEXT),
-                alignment=ft.alignment.center, width=39, height=43,
+                alignment=ft.Alignment.CENTER, width=39, height=43,
                 bgcolor=color if used else "#202A43",
-                border=ft.border.all(1, color if used else "#35415E"), border_radius=11,
+                border=ft.Border.all(1, color if used else "#35415E"), border_radius=11,
                 on_click=lambda e, x=ch: guess(x), ink=True
             ))
         remain = 6 - len(state["wrong"])
@@ -242,11 +242,11 @@ def main(page: ft.Page):
                 ]),
                 ft.Container(height=4),
                 ft.Stack([
-                    ft.Container(width=76, height=76, border_radius=50, border=ft.border.all(5, "#303B55")),
-                    ft.Container(width=76, height=76, border_radius=50, border=ft.border.all(5, CYAN if state["time_left"] > 10 else RED), rotate=ft.Rotate(angle=0.2)),
-                    ft.Container(width=76, height=76, alignment=ft.alignment.center,
+                    ft.Container(width=76, height=76, border_radius=50, border=ft.Border.all(5, "#303B55")),
+                    ft.Container(width=76, height=76, border_radius=50, border=ft.Border.all(5, CYAN if state["time_left"] > 10 else RED), rotate=ft.Rotate(angle=0.2)),
+                    ft.Container(width=76, height=76, alignment=ft.Alignment.CENTER,
                         content=ft.Column([ft.Text(str(state["time_left"]), size=24, weight=ft.FontWeight.BOLD, color=TEXT), label("ثانیه", 9)], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.CENTER))
-                ], alignment=ft.alignment.center),
+                ], alignment=ft.Alignment.CENTER),
                 ft.Container(height=8),
                 ft.Text("کلمه مخفی", size=13, color=MUTED, text_align=ft.TextAlign.CENTER),
                 ft.Row(shown, alignment=ft.MainAxisAlignment.CENTER, wrap=True, spacing=6),
@@ -270,7 +270,7 @@ def main(page: ft.Page):
         won = bool(state["history"] and state["history"][-1]["won"])
         return ft.Column([
             ft.Container(height=35),
-            ft.Container(content=ft.Text("🏆" if won else "💫", size=66), alignment=ft.alignment.center),
+            ft.Container(content=ft.Text("🏆" if won else "💫", size=66), alignment=ft.Alignment.CENTER),
             ft.Text("آفرین! ترکوندی!" if won else "این دور تموم شد!", size=27, weight=ft.FontWeight.BOLD,
                     color=GREEN if won else GOLD, text_align=ft.TextAlign.CENTER),
             label("کلمه‌ای که دنبالش بودی:", 13),
@@ -292,7 +292,7 @@ def main(page: ft.Page):
                 ft.Container(height=8),
                 ft.Row([
                     ft.Container(content=ft.Text("W", size=13, weight=ft.FontWeight.BOLD, color=TEXT),
-                                 width=30, height=30, alignment=ft.alignment.center, bgcolor=PURPLE, border_radius=10),
+                                 width=30, height=30, alignment=ft.Alignment.CENTER, bgcolor=PURPLE, border_radius=10),
                     ft.Text("WORD PLAY", size=11, weight=ft.FontWeight.BOLD, color="#8D98B3", font_family="Arial"),
                     ft.Container(expand=True),
                     ft.Icon(ft.Icons.AUTO_AWESOME, color=GOLD, size=17)
