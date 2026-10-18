@@ -1,74 +1,31 @@
-"""Runtime smoke test: build every major screen with the pinned Flet version."""
 from pathlib import Path
 import sys
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import flet as ft
 import main
-
-
-class _Task:
-    def done(self):
-        return False
-
-    def cancel(self):
-        return None
-
-
-class _Page:
-    def __init__(self):
-        self.controls = []
-        self.snack_bar = None
-
-    def add(self, *controls):
-        self.controls.extend(controls)
-
-    def update(self):
-        return None
-
-    def run_task(self, async_function, *args, **kwargs):
-        # Keep the smoke test deterministic; do not start the timer.
-        return _Task()
-
-
-def _walk(control):
-    if control is None or isinstance(control, (str, int, float, bool)):
-        return
-    if isinstance(control, (list, tuple)):
-        for child in control:
-            yield from _walk(child)
-        return
-    yield control
-    content = getattr(control, "content", None)
-    if content is not None and not isinstance(content, (str, int, float, bool)):
-        yield from _walk(content)
-    controls = getattr(control, "controls", None)
-    if controls:
-        for child in controls:
-            yield from _walk(child)
-
-
-def _click_button(page, label):
-    for control in _walk(page.controls):
-        if isinstance(control, ft.Button) and control.content == label:
-            if not callable(control.on_click):
-                raise AssertionError(f"Button {label!r} has no callable click handler")
-            control.on_click(None)
-            return
-    raise AssertionError(f"Could not find button {label!r}")
-
-
-def main_smoke_test():
-    page = _Page()
-    main.main(page)  # Construct home screen.
-    assert page.controls, "Home screen was not rendered"
-
-    _click_button(page, "شروع بازی")  # Construct game screen.
-    _click_button(page, "تسلیم شدن")  # Construct result screen.
-    _click_button(page, "بازگشت به خانه")
-    print(f"Flet {getattr(ft, '__version__', 'unknown')}: home/game/result screens passed")
-
-
-if __name__ == "__main__":
-    main_smoke_test()
+class Task:
+ def done(self): return False
+ def cancel(self): pass
+class Page:
+ def __init__(self): self.controls=[]; self.snack_bar=None
+ def add(self,*c): self.controls.extend(c)
+ def update(self): pass
+ def run_task(self,fn,*args,**kwargs): return Task()
+def walk(c):
+ if c is None or isinstance(c,(str,int,float,bool)): return
+ if isinstance(c,(list,tuple)):
+  for x in c: yield from walk(x)
+  return
+ yield c
+ content=getattr(c,"content",None)
+ if content is not None and not isinstance(content,(str,int,float,bool)): yield from walk(content)
+ for x in getattr(c,"controls",[]) or []: yield from walk(x)
+def click(p,label):
+ for c in walk(p.controls):
+  if isinstance(c,ft.Button) and c.content==label:
+   assert callable(c.on_click); c.on_click(None); return
+ raise AssertionError("Button not found: "+label)
+if __name__=="__main__":
+ p=Page(); main.main(p); assert p.controls
+ click(p,"شروع تک‌نفره"); click(p,"تسلیم شدن"); click(p,"بازگشت به خانه")
+ print("Flet UI smoke test passed")
