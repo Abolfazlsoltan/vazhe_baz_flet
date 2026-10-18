@@ -19,8 +19,8 @@ WORDS={
 ALPHABET=list("اآبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی")
 BG,PANEL="#0B1020","#151D32"; PURPLE,CYAN="#9B7BFF","#55D6E8"
 TEXT,MUTED="#F4F5FF","#A5AEC5"; GREEN,RED,GOLD="#42D392","#FF6B82","#FFC76A"
-DATA_DIR=Path.home()/".vazhe_baz"; DATA_DIR.mkdir(parents=True,exist_ok=True)
-DB_PATH=DATA_DIR/"stats.sqlite3"
+DATA_DIR = None
+DB_PATH = None
 
 def norm(c): return {"أ":"ا","إ":"ا","ٱ":"ا","ك":"ک","ي":"ی","ى":"ی"}.get(c,c)
 def display_chars(word):
@@ -38,6 +38,11 @@ def stats_save(won,gain):
         db.execute("UPDATE stats SET score=score+?,best=MAX(best,?),rounds=rounds+1,wins=wins+?,losses=losses+? WHERE id=1",(gain,gain,int(won),int(not won)))
 
 def main(page:ft.Page):
+    global DATA_DIR, DB_PATH
+    # Use Flet's app-private directory; Path.home() can resolve to /data on Android.
+    DATA_DIR = Path(page.get_app_directory()) / "vazhe_baz"
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    DB_PATH = DATA_DIR / "stats.sqlite3"
     page.title=APP_NAME; page.theme_mode=ft.ThemeMode.DARK
     page.theme=ft.Theme(color_scheme_seed=PURPLE,use_material3=True)
     page.bgcolor=BG; page.padding=0; page.spacing=0; page.rtl=True; page.scroll=ft.ScrollMode.AUTO
