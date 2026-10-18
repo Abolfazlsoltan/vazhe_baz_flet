@@ -29,5 +29,5 @@ jobs:
           target: apk
           runner-python-version: "3.12"
           bundled-python-version: "3.12"
-          build-number: \${{ github.run_number }}
+          build-number: ${{ github.run_number }}
           cache: false
