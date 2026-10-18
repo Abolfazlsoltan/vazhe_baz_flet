@@ -1,5 +1,5 @@
 """واژه‌باز: بازی حدس کلمه فارسی"""
-import asyncio, random, sqlite3, unicodedata
+import asyncio, os, random, sqlite3, unicodedata
 from pathlib import Path
 import flet as ft
 import httpx
@@ -39,8 +39,9 @@ def stats_save(won,gain):
 
 def main(page:ft.Page):
     global DATA_DIR, DB_PATH
-    # Use Flet's app-private directory; Path.home() can resolve to /data on Android.
-    DATA_DIR = Path(page.get_app_directory()) / "vazhe_baz"
+    # Flet provides an app-private writable directory on Android.
+    # Path.home() may resolve to the protected /data directory in packaged apps.
+    DATA_DIR = Path(os.environ.get("FLET_APP_STORAGE_DATA") or Path.home()) / "vazhe_baz"
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     DB_PATH = DATA_DIR / "stats.sqlite3"
     page.title=APP_NAME; page.theme_mode=ft.ThemeMode.DARK
