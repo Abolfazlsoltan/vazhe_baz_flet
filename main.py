@@ -158,7 +158,7 @@ def main(page:ft.Page):
           ft.Text("کلمهٔ مخفی",size=13,color=MUTED,text_align=ft.TextAlign.CENTER),
           ft.Row(slots,wrap=True,spacing=5,alignment=ft.MainAxisAlignment.CENTER),
           ft.Text("حروف اشتباه",size=12,color=RED,text_align=ft.TextAlign.RIGHT),
-          ft.Row(wrong_slots,wrap=True,spacing=5,alignment=ft.MainAxisAlignment.START),
+          ft.Row(wrong_slots,wrap=True,spacing=5,alignment=ft.MainAxisAlignment.START,rtl=False),
           ft.Row([ft.Text(f"💡 {s['hints']} راهنمایی",color=GOLD,size=12),ft.Container(expand=True),ft.Text(f"❌ {len(s['wrong'])} اشتباه",color=RED,size=12)])]
         if s["mode"]=="local": body.insert(0,ft.Text(f"نوبت {s['turn']+1} | امتیازها: {s['scores'][0]} - {s['scores'][1]}",color=CYAN,weight=ft.FontWeight.BOLD,text_align=ft.TextAlign.CENTER))
         return ft.Column([ft.Row([ft.IconButton(ft.Icons.ARROW_FORWARD_ROUNDED,on_click=home),ft.Container(expand=True),ft.Text("حدس کلمه",size=18,color=TEXT,weight=ft.FontWeight.BOLD)]),
