@@ -200,7 +200,7 @@ def main(page:ft.Page):
           card(ft.Column([ft.Row([label("امتیاز این دور"),ft.Container(expand=True),ft.Text(str(s["gain"]),size=22,color=GOLD)]),
             ft.Row([label("حروف اشتباه"),ft.Container(expand=True),ft.Text(str(len(s["wrong"])),color=RED)]),
             ft.Row([label("راهنمایی باقی‌مانده"),ft.Container(expand=True),ft.Text(str(s["hints"]),color=GREEN)])],spacing=12)),
-          btn("دور بعدی",ft.Icons.REPLAY_ROUNDED,lambda e:new_game("solo")),btn("بازگشت به خانه",ft.Icons.HOME_ROUNDED,home,"#293550")],
+          btn("دور بعدی",ft.Icons.REPLAY_ROUNDED,lambda e:new_game(s["mode"] if s["mode"] in ("solo","daily","local") else "solo")),btn("بازگشت به خانه",ft.Icons.HOME_ROUNDED,home,"#293550")],
           spacing=14,horizontal_alignment=ft.CrossAxisAlignment.STRETCH,scroll=ft.ScrollMode.AUTO)
     url_field=ft.TextField(label="آدرس سرور",value=s["online_url"],text_size=13,border_radius=12)
     name_field=ft.TextField(label="نام بازیکن",value=s["nickname"],text_size=13,border_radius=12)
@@ -226,14 +226,35 @@ def main(page:ft.Page):
             render(); tasks["poll"]=page.run_task(poll_online)
         except Exception as ex: s["online_error"]=f"پیوستن انجام نشد: {ex}"; render()
     async def poll_online():
-        try:
-            while s["screen"]=="online_game":
-                r=await client.get(f"{s['online_url']}/rooms/{s['room']}",params={"player_id":s["player_id"]}); r.raise_for_status()
-                s["online"]=r.json()
-                if s["online"].get("status") in ("won","lost","finished"): s["screen"]="online_result"; render(); break
-                render(); await asyncio.sleep(1)
-        except asyncio.CancelledError: raise
-        except Exception as ex: s["online_error"]=f"ارتباط قطع شد: {ex}"; render()
+        # قطع کوتاه اینترنت نباید بازی آنلاین را برای همیشه متوقف کند.
+        retry_delay = 1
+        while s["screen"] == "online_game":
+            try:
+                r = await client.get(
+                    f"{s['online_url']}/rooms/{s['room']}",
+                    params={"player_id": s["player_id"]},
+                )
+                r.raise_for_status()
+                s["online"] = r.json()
+                s["online_error"] = ""
+                if s["online"].get("status") in ("won", "lost", "finished"):
+                    s["screen"] = "online_result"
+                    render()
+                    break
+                render()
+                retry_delay = 1
+                await asyncio.sleep(1)
+            except asyncio.CancelledError:
+                raise
+            except Exception as ex:
+                if s["screen"] != "online_game":
+                    break
+                s["online_error"] = (
+                    f"ارتباط قطع شد؛ تلاش دوباره تا {retry_delay} ثانیهٔ دیگر…"
+                )
+                render()
+                await asyncio.sleep(retry_delay)
+                retry_delay = min(retry_delay * 2, 8)
     async def online_guess(ch):
         try:
             d=await api(f"/rooms/{s['room']}/guess",{"player_id":s["player_id"],"letter":ch}); s["online"]=d
