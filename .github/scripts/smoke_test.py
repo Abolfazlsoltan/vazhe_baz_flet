@@ -28,4 +28,5 @@ def click(p,label):
 if __name__=="__main__":
  p=Page(); main.main(p); assert p.controls
  click(p,"شروع تک‌نفره"); click(p,"تسلیم شدن"); click(p,"بازگشت به خانه")
- print("Flet UI smoke test passed")
+ click(p,"چالش روزانه • معمای یکسان برای همه"); click(p,"تسلیم شدن"); click(p,"بازگشت به خانه")
+ print("Flet UI smoke test passed (solo + daily challenge)")
