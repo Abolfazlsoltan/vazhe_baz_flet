@@ -1,5 +1,6 @@
 """واژه‌باز: بازی حدس کلمه فارسی"""
-import asyncio, os, random, sqlite3, unicodedata
+import asyncio, hashlib, os, random, sqlite3, unicodedata
+from datetime import date
 from pathlib import Path
 import flet as ft
 import httpx
@@ -17,8 +18,8 @@ WORDS={
 "شغل":["پزشک","معلم","خلبان","آشپز","برنامه‌نویس","عکاس","معمار"],
 "گل":["لاله","نرگس","رز","آفتابگردان","ارکیده","یاس"]}
 ALPHABET=list("اآبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی")
-BG,PANEL="#0B1020","#151D32"; PURPLE,CYAN="#9B7BFF","#55D6E8"
-TEXT,MUTED="#F4F5FF","#A5AEC5"; GREEN,RED,GOLD="#42D392","#FF6B82","#FFC76A"
+BG,PANEL="#071521","#102638"; PURPLE,CYAN="#18B7A4","#63E6D0"
+TEXT,MUTED="#F2FBFF","#A4BBC9"; GREEN,RED,GOLD="#5CE0B0","#FF718B","#FFD166"
 DATA_DIR = None
 DB_PATH = None
 
@@ -45,7 +46,7 @@ def main(page:ft.Page):
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     DB_PATH = DATA_DIR / "stats.sqlite3"
     page.title=APP_NAME; page.theme_mode=ft.ThemeMode.DARK
-    page.theme=ft.Theme(color_scheme_seed=PURPLE,use_material3=True)
+    page.theme=ft.Theme(color_scheme_seed=CYAN,use_material3=True)
     page.bgcolor=BG; page.padding=0; page.spacing=0; page.rtl=True; page.scroll=ft.ScrollMode.AUTO
     stats=stats_load()
     s={"screen":"home","topic":"حیوان","seconds":60,"time_left":60,"word":"","guessed":set(),"wrong":[],"hints":3,
@@ -72,7 +73,17 @@ def main(page:ft.Page):
     def home(e=None):
         stop_timer(); cancel("poll"); s["screen"]="home"; render()
     def new_game(mode="solo",e=None):
-        stop_timer(); s.update(word=random.choice(WORDS[s["topic"]]),guessed=set(),wrong=[],hints=3,time_left=s["seconds"],
+        stop_timer()
+        topic=s["topic"]
+        if mode=="daily":
+            # معمای روزانه برای همهٔ بازیکنان در همان تاریخ یکسان است.
+            pool=[(name,word) for name,items in WORDS.items() for word in items]
+            day_seed=hashlib.sha256(date.today().isoformat().encode("utf-8")).digest()
+            topic,word=pool[int.from_bytes(day_seed[:4],"big") % len(pool)]
+            seconds=90
+        else:
+            word=random.choice(WORDS[topic]); seconds=s["seconds"]
+        s.update(word=word,topic=topic,guessed=set(),wrong=[],hints=3,time_left=seconds,
             active=True,screen="game",mode=mode,turn=0,scores=[0,0],gain=0,won=False)
         render(); tasks["timer"]=page.run_task(tick)
     async def tick():
@@ -127,14 +138,20 @@ def main(page:ft.Page):
             label("حروف درست را پیدا کن، امتیاز بگیر و رکوردت را بشکن.",13),
             ft.Row([ft.Column([label("امتیاز کل",12),ft.Text(str(stats["score"]),size=23,color=GOLD,weight=ft.FontWeight.BOLD)],expand=True,spacing=3),
               ft.Column([label("بهترین دور",12),ft.Text(str(stats["best"]),size=23,color=CYAN,weight=ft.FontWeight.BOLD)],expand=True,spacing=3),
-              ft.Column([label("بردها",12),ft.Text(str(stats["wins"]),size=23,color=GREEN,weight=ft.FontWeight.BOLD)],expand=True,spacing=3)])],spacing=10),padding=21),
+              ft.Column([label("بردها",12),ft.Text(str(stats["wins"]),size=23,color=GREEN,weight=ft.FontWeight.BOLD)],expand=True,spacing=3)]),
+            ft.Divider(color="#263F50",height=8),
+            ft.Row([ft.Column([ft.Text(f"سطح {max(1,stats['score']//500+1)}",size=15,color=CYAN,weight=ft.FontWeight.BOLD),
+                label(f"{stats['score']%500} از ۵۰۰ XP تا سطح بعدی",11)],spacing=3,expand=True),
+                ft.Container(content=ft.Icon(ft.Icons.AUTO_AWESOME,color=GOLD,size=22),padding=10,bgcolor="#17394A",border_radius=14)]),
+            ft.ProgressBar(value=(stats["score"]%500)/500,color=CYAN,bgcolor="#263F50",height=7)],spacing=10),padding=21),
           card(ft.Column([ft.Text("موضوع بازی",size=17,weight=ft.FontWeight.BOLD,color=TEXT),chips,ft.Divider(color="#2B3550"),
             ft.Row([ft.Text("⏱ زمان هر دور",color=TEXT),ft.Container(expand=True),ft.Dropdown(width=130,value=str(s["seconds"]),
               options=[ft.DropdownOption(key="30",text="۳۰ ثانیه"),ft.DropdownOption(key="60",text="۶۰ ثانیه"),ft.DropdownOption(key="90",text="۹۰ ثانیه")],
               on_select=lambda e:s.update(seconds=int(e.control.value)))]),
             btn("شروع تک‌نفره",ft.Icons.PLAY_ARROW_ROUNDED,lambda e:new_game("solo"),PURPLE),
-            btn("دونفره روی یک دستگاه",ft.Icons.GROUPS_ROUNDED,lambda e:new_game("local"),"#276B80"),
-            btn("بازی آنلاین",ft.Icons.PUBLIC_ROUNDED,online_screen_open,"#315D48")],spacing=12)),
+            btn("چالش روزانه • معمای یکسان برای همه",ft.Icons.CALENDAR_TODAY_ROUNDED,lambda e:new_game("daily"),"#176B70"),
+            btn("دونفره روی یک دستگاه",ft.Icons.GROUPS_ROUNDED,lambda e:new_game("local"),"#24546B"),
+            btn("بازی آنلاین",ft.Icons.PUBLIC_ROUNDED,online_screen_open,"#1D6658")],spacing=12)),
           card(ft.Column([ft.Text("قوانین بازی",size=16,weight=ft.FontWeight.BOLD,color=TEXT),
             label("• حروف اشتباه زیر خانه‌ها از چپ به راست ثبت می‌شوند.",13),
             label("• تعداد خطاهای مجاز برابر تعداد حروف کلمه است.",13),
@@ -178,8 +195,8 @@ def main(page:ft.Page):
             winner="بازیکن اول" if s["scores"][0]>=s["scores"][1] else "بازیکن دوم"
             extra=[ft.Text(f"امتیازها: {s['scores'][0]} - {s['scores'][1]} | {winner}",color=CYAN,text_align=ft.TextAlign.CENTER)]
         return ft.Column([ft.Container(height=16),ft.Text("🏆" if s["won"] else "💫",size=60,text_align=ft.TextAlign.CENTER),
-          ft.Text(s["result"],size=24,color=GREEN if s["won"] else GOLD,weight=ft.FontWeight.BOLD,text_align=ft.TextAlign.CENTER),
-          label("کلمهٔ موردنظر:",13),ft.Text(s["word"],size=30,color=CYAN,weight=ft.FontWeight.BOLD,text_align=ft.TextAlign.CENTER),*extra,
+          ft.Text("چالش روزانه" if s["mode"]=="daily" else s["result"],size=24,color=GREEN if s["won"] else GOLD,weight=ft.FontWeight.BOLD,text_align=ft.TextAlign.CENTER),
+          label(s["result"] if s["mode"]=="daily" else "کلمهٔ موردنظر:",13),ft.Text(s["word"],size=30,color=CYAN,weight=ft.FontWeight.BOLD,text_align=ft.TextAlign.CENTER),*extra,
           card(ft.Column([ft.Row([label("امتیاز این دور"),ft.Container(expand=True),ft.Text(str(s["gain"]),size=22,color=GOLD)]),
             ft.Row([label("حروف اشتباه"),ft.Container(expand=True),ft.Text(str(len(s["wrong"])),color=RED)]),
             ft.Row([label("راهنمایی باقی‌مانده"),ft.Container(expand=True),ft.Text(str(s["hints"]),color=GREEN)])],spacing=12)),
